@@ -1,0 +1,43 @@
+---
+
+ - hosts: all
+   become: true
+   pre-tasks:
+
+   - name: update and upgrade (ubuntu)
+     tags: always
+     apt:
+       update_cache: yes
+       upgrade: dist
+     when: ansible_distrubution == "Ubuntu"
+   - name: upgrade and update (centos)
+     tags: always
+     yum:
+       update_only: yes
+       name: "*"
+       state: latest
+    when: ansible_distribution == "RedHat"
+...
+
+---
+- hosts: all
+  become: true
+  tasks:
+
+  - name: install apache for ubuntu and centos 
+    tags: always
+    package:
+      name: "{{apache_package}}"
+
+...
+
+---
+
+ - name: start and enbale httpd(centos)
+   tags: apache, httpd, centos
+   service:
+     name: httpd
+     state: started
+     enabled: yes
+  when: ansible_distribution == "RedHat"
+...

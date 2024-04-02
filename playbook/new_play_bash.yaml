@@ -1,0 +1,16 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: Install apache2 package
+    shell:
+      /bin/bash/full_install_apache2.sh
+    when: ansible_distribution_version == "Ubuntu"
+
+  - name: Install httpd package
+    shell:
+      /bin/bash/install_httpd.sh
+    when: ansible_distribution_version == "RedHat"
+

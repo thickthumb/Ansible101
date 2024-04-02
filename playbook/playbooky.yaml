@@ -1,0 +1,29 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: Install apache2 package
+    apt:
+      name: apache2
+      state: latest
+    when: ansible_distribution_version == "Ubuntu"
+
+  - name: add php support for apache
+    apt:
+      name: libapache2-mode-php
+      state: latest
+    when: ansible_distribution_version == "Ubuntu"
+
+  - name: Install apache2 package
+    dnf:
+      name: httpd
+      state: latest
+    when: ansible_distribution_version == "RedHat"
+
+  - name: add php support for apache
+    dnf:
+      name: php
+      state: latest
+    when: ansible_distribution_version == "RedHat"

@@ -1,0 +1,45 @@
+---
+- hosts: your_web_servers
+  become: true
+  vars:
+    website_repo_url: "https://github.com/thickthumb/figma1"
+    web_root: "/var/www/play"
+    apache_service_name:
+      Debian: apache2
+      CentOS: httpd
+  tasks:
+    - name: Clone website repository from GitHub
+      git:
+        repo: "{{ website_repo_url }}"
+        dest: "{{ web_root }}"
+        clone: yes
+
+    - name: Install Apachem 
+        package:
+          name: "{{ apache_service_name[ansible_distribution] }}"
+          state: present
+
+    - name: Copy custom configuration for virtual host
+      copy:
+        src: /etc/apache2/sites-available/000-default.conf
+        dest: "/etc/{{ apache_service_name[ansible_distribution] }}/sites-available/play.conf"
+      notify:
+        - Restart Apache
+
+    - name: Enable custom virtual host
+      command: "{{ 'a2ensite' if ansible_distribution == 'Debian' else 'ln -s' }} play.conf"
+      args:
+        chdir: "/etc/{{ apache_service_name[ansible_distribution] }}/sites-available/"
+      notify:
+        - Restart Apache
+
+    - name: Disable default virtual host
+      command: "{{ 'a2dissite' if ansible_distribution == 'Debian' else 'rm -f' }} /etc/{{ apache_service_name[ansible_distribution] }}/conf.d/0003"
+      notify:
+        - Restart Apache
+
+  handlers:
+    - name: Restart Apache
+        service:
+          name: "{{ apache_service_name[ansible_distribution] }}"
+          state: restarted
